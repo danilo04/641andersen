@@ -349,6 +349,10 @@ public class AndersenPointsTo implements PointsToAnalysis {
 		flowG = null;
 		localToLoads = null;
 		localToStores = null;
+		stringConstants = null;
+		classConstants = null;
+		thisRefs = null;
+		paramRefs = null;
 	}
 
 	private void handleClassConstants() {
