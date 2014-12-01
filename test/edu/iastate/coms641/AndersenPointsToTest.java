@@ -27,7 +27,7 @@ import soot.jimple.AssignStmt;
 import soot.jimple.InstanceFieldRef;
 
 public class AndersenPointsToTest {	
-	private static String SOOT_CLASS_PATH = ".:/home/danilo04/workspace/javatests/build/javatests.jar";
+	private static String SOOT_CLASS_PATH = ".:benchmarks/javatests.jar";
 	private static Map<String, String> methodToTest = new HashMap<String, String>();
 	@Rule public TestName name = new TestName();
 
