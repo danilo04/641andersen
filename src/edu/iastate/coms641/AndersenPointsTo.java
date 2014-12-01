@@ -299,8 +299,9 @@ public class AndersenPointsTo implements PointsToAnalysis {
 			Variable n = worklist.poll();
 
 			// compute the diffProp for each edge from n --> n' in G
-			if (flowG.containsKey(n)) {
-				for (Variable np : flowG.get(n)) {
+			Set<Variable> nps = flowG.get(n);
+			if (nps != null) {
+				for (Variable np : nps) {
 					diffProp(ptDelta.get(n), np, worklist);
 				}
 			}
@@ -309,8 +310,9 @@ public class AndersenPointsTo implements PointsToAnalysis {
 			if (n.getVariableType() == VariableType.LOCAL) {
 				// compute the stores
 				Local x = ((LocalVariable) n).getLocal();
-				if (localToStores.containsKey(x)) {
-					for (AssignStmt xfy : localToStores.get(x)) {
+				Set<AssignStmt> xfys = localToStores.get(x);
+				if (xfys != null) {
+					for (AssignStmt xfy : xfys) {
 						SootField f = ((InstanceFieldRef) xfy.getLeftOp()).getField();
 						Variable y = getVariable(xfy.getRightOp());
 						for (Node oi : ptDelta.get(n).getNodes()) {
@@ -324,8 +326,9 @@ public class AndersenPointsTo implements PointsToAnalysis {
 				}
 
 				// compute the loads
-				if (localToLoads.containsKey(x)) {
-					for (AssignStmt yxf : localToLoads.get(x)) {
+				Set<AssignStmt> yxfs = localToLoads.get(x);
+				if (yxfs != null) {
+					for (AssignStmt yxf : yxfs) {
 						SootField f = ((InstanceFieldRef) yxf.getRightOp()).getField();
 						Variable y = getVariable(yxf.getLeftOp());
 						for (Node oi : ptDelta.get(n).getNodes()) {
@@ -372,11 +375,13 @@ public class AndersenPointsTo implements PointsToAnalysis {
 						pt.put(x, set);
 					}
 				}
-			} else {
+			} else if (a.getLeftOp() instanceof Local || a.getLeftOp() instanceof StaticFieldRef) {
 				Variable x = getVariable(a.getLeftOp());
 				HashNodePointsToSet set = pt.containsKey(x) ? pt.get(x) : HashNodePointsToSet.empty();
 				set.addString(((ClassConstant) a.getRightOp()).value);
 				pt.put(x, set);
+			} else {
+				//G.v().out.println("Still do not handle this constructor: " + a);
 			}
 		}
 	}
@@ -394,11 +399,13 @@ public class AndersenPointsTo implements PointsToAnalysis {
 						pt.put(x, set);
 					}
 				}
-			} else {
+			} else if (a.getLeftOp() instanceof Local || a.getLeftOp() instanceof StaticFieldRef)  {
 				Variable x = getVariable(a.getLeftOp());
 				HashNodePointsToSet set = pt.containsKey(x) ? pt.get(x) : HashNodePointsToSet.empty();
 				set.addString(((StringConstant) a.getRightOp()).value);
 				pt.put(x, set);
+			} else {
+				//G.v().out.println("Still do not handle this constructor: " + a);
 			}
 		}
 		
@@ -413,14 +420,14 @@ public class AndersenPointsTo implements PointsToAnalysis {
 	private void diffProp(HashNodePointsToSet srcSet, Variable n, Queue<Variable> worklist) {
 		HashNodePointsToSet oldPtDeltaSet = ptDelta.get(n);
 		// in this case null and empty are equal
-		if (oldPtDeltaSet == null) {
+		/*if (oldPtDeltaSet == null) {
 			// avoid the error in which an empty set is different from a null set
 			oldPtDeltaSet = HashNodePointsToSet.empty();
-			ptDelta.put(n, oldPtDeltaSet);
-		}
+			//ptDelta.put(n, oldPtDeltaSet);
+		}*/
 		// ptDelta(n) = ptDelta(n) U (srcDest - pt(n))
-		HashNodePointsToSet newPtDeltaSet = oldPtDeltaSet.union(HashNodePointsToSet.copy(srcSet).diff(pt.get(n)));		
-		
+		HashNodePointsToSet newPtDeltaSet = (oldPtDeltaSet == null) ? HashNodePointsToSet.copy(srcSet).diff(pt.get(n)) :
+																	  oldPtDeltaSet.union(HashNodePointsToSet.copy(srcSet).diff(pt.get(n)));		
 		// if ptDetal(n) has changed
 		if (ptDelta.get(n) == null || !newPtDeltaSet.equals(oldPtDeltaSet)) {
 			ptDelta.put(n, newPtDeltaSet);
@@ -504,18 +511,20 @@ public class AndersenPointsTo implements PointsToAnalysis {
 			} else if (a.getLeftOp() instanceof InstanceFieldRef && a.getRightOp() instanceof Local) {
 				Value base = ((InstanceFieldRef) a.getLeftOp()).getBase();
 				Local baseStore = (Local) base;
-				if (!localToStores.containsKey(baseStore)) {
-					localToStores.put(baseStore, new HashSet<AssignStmt>());
-				}
 				Set<AssignStmt> stores = localToStores.get(baseStore);
+				if (stores == null) {
+					stores = new HashSet<AssignStmt>();
+					localToStores.put(baseStore, stores);
+				}
 				stores.add(a);
 			} else if (a.getRightOp() instanceof InstanceFieldRef && a.getLeftOp() instanceof Local) {
 				Value base = ((InstanceFieldRef) a.getRightOp()).getBase();
 				Local baseStore = (Local) base;
-				if (!localToLoads.containsKey(baseStore)) {
-					localToLoads.put(baseStore, new HashSet<AssignStmt>());
-				}
 				Set<AssignStmt> loads = localToLoads.get(baseStore);
+				if (loads == null) {
+					loads = new HashSet<AssignStmt>();
+					localToLoads.put(baseStore, loads);
+				}
 				loads.add(a);
 			} else if (a.getRightOp() instanceof StringConstant) {
 				stringConstants.add(a);
@@ -553,7 +562,7 @@ public class AndersenPointsTo implements PointsToAnalysis {
 			return new LocalVariable((Local) op);
 		else if (op instanceof StaticFieldRef)
 			return new StaticRefVariable((StaticFieldRef) op);
-		throw new InvalidParameterException("Value is not a local or static ref, it is: " + op.getClass());
+		throw new InvalidParameterException("Value is not a local or static ref, it is: " + op.getClass() + ", op: " + op);
 	}
 
 	private ObjectFieldVariable getObjectFieldVariable(Node obj, SootField f) {

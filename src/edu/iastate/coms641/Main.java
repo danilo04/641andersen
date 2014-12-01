@@ -4,10 +4,8 @@ import java.text.NumberFormat;
 import java.util.Arrays;
 
 import soot.Body;
-import soot.IntegerType;
 import soot.Local;
 import soot.PointsToAnalysis;
-import soot.PointsToSet;
 import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
@@ -32,32 +30,23 @@ public class Main {
 		System.out.println(Scene.v().getMainClass());
 		PointsToAnalysis pointsTo = Scene.v().getPointsToAnalysis();
 		System.out.println("PointsToAnalysis class:" + pointsTo.getClass());
-		SootClass test1Class = Scene.v().loadClassAndSupport("edu.iastate.coms641.tests.Test1");
+		SootClass test1Class = Scene.v().loadClassAndSupport(mainClass);
 		SootMethod test1Main = test1Class.getMethod("void main(java.lang.String[])");
 		Body bTest1 = test1Main.getActiveBody();
-		InstanceFieldRef test1 = null;
+		/*InstanceFieldRef test1 = null;
 		InstanceFieldRef test2 = null;
-		InstanceFieldRef test3 = null;
+		InstanceFieldRef test3 = null;*/
 		for (Unit u : bTest1.getUnits()) {
 			if (u instanceof AssignStmt) {
 				AssignStmt a = (AssignStmt) u;
 				if (a.getRightOp() instanceof InstanceFieldRef && 
 						a.getLeftOp() instanceof Local) {
-					Local left = (Local) a.getLeftOp();
-					if (left.getType() instanceof IntegerType) {
-						if (test1 == null) {
-							test1 = (InstanceFieldRef) a.getRightOp();
-						} else if (test2 == null) {
-							test2 = (InstanceFieldRef) a.getRightOp();
-						} else {
-							test3 = (InstanceFieldRef) a.getRightOp();
-						}
-					}
+					System.out.println("Statement: " + a);
 				}
 			}
 		}
 		
-		System.out.println("Testing values");
+		/*System.out.println("Testing values");
 		PointsToSet setTest1 = pointsTo.reachingObjects((Local)test1.getBase());
 		PointsToSet setTest2 = pointsTo.reachingObjects((Local)test2.getBase());
 		PointsToSet setTest3 = pointsTo.reachingObjects((Local)test3.getBase());
@@ -77,7 +66,7 @@ public class Main {
 			System.out.println("Test2: " + test2 + " and test3: " + test3 + " may be alias");
 		} else {
 			System.out.println("Test2: " + test2 + " and test3: " + test3 + " are not aliases");
-		}
+		}*/
 		
 		memoryUsage();
 		System.out.println("Finished execution.");
