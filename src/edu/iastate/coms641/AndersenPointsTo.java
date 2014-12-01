@@ -254,17 +254,21 @@ public class AndersenPointsTo implements PointsToAnalysis {
 	}
 
 	public void build() {
-		G.v().out.println("[Andersen] Building CG with dump pointer analysis...");
-		
+		long time = -System.currentTimeMillis();
 		prepareCallgraph();
+		long cgTime = time + System.currentTimeMillis();
+		G.v().out.println("[Andersen] Built CG with dump pointer analysis: " + cgTime);
 		
-		G.v().out.println("[Andersen] Create flow graph G and finding statements of interest...");
 		for (SootClass c : Scene.v().getClasses()) {
 			handleClass(c);
 		}
+		
+		long gTime = time + System.currentTimeMillis() - cgTime;
+		G.v().out.println("[Andersen] Create flow graph G and finding statements of interest: " + gTime);
 
-		G.v().out.println("[Andersen] Building pointsTo sets...");
 		buildPointsToSets();
+		long pTime = time + System.currentTimeMillis() - cgTime - gTime;
+		G.v().out.println("[Andersen] Building pointsTo sets: " + pTime);
 
 		Scene.v().setPointsToAnalysis(this);
 	}

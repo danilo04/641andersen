@@ -27,7 +27,7 @@ public class Main {
 			System.exit(1);
 		}
 		
-		Utils.setupSoot(sootClassPath, mainClass, "cg.andersen");
+		Utils.setupSoot(sootClassPath, mainClass, "cg.spark");
 		
 		System.out.println(Scene.v().getMainClass());
 		PointsToAnalysis pointsTo = Scene.v().getPointsToAnalysis();
