@@ -1,5 +1,6 @@
 package edu.iastate.coms641;
 
+import java.text.NumberFormat;
 import java.util.Arrays;
 
 import soot.Body;
@@ -26,7 +27,7 @@ public class Main {
 			System.exit(1);
 		}
 		
-		Utils.setupSoot(sootClassPath, mainClass);
+		Utils.setupSoot(sootClassPath, mainClass, "cg.andersen");
 		
 		System.out.println(Scene.v().getMainClass());
 		PointsToAnalysis pointsTo = Scene.v().getPointsToAnalysis();
@@ -78,7 +79,26 @@ public class Main {
 			System.out.println("Test2: " + test2 + " and test3: " + test3 + " are not aliases");
 		}
 		
+		memoryUsage();
 		System.out.println("Finished execution.");
+	}
+	
+	static void memoryUsage() {
+		Runtime runtime = Runtime.getRuntime();
+
+	    NumberFormat format = NumberFormat.getInstance();
+
+	    StringBuilder sb = new StringBuilder();
+	    long maxMemory = runtime.maxMemory();
+	    long allocatedMemory = runtime.totalMemory();
+	    long freeMemory = runtime.freeMemory();
+
+	    sb.append("free memory: " + format.format((freeMemory / 1024) / 1024) + "mb\n");
+	    sb.append("allocated memory: " + format.format((allocatedMemory / 1024) / 1024) + "mb\n");
+	    sb.append("max memory: " + format.format((maxMemory / 1024) / 1024) + "mb\n");
+	    sb.append("used memory: " + format.format(((allocatedMemory - freeMemory) / 1024) / 1024) + "mb\n");
+	    sb.append("total free memory: " + format.format((freeMemory + (maxMemory - allocatedMemory)) / 1024) + "mb\n");
+	    System.out.println(sb.toString());
 	}
 	
 	static void usage() {

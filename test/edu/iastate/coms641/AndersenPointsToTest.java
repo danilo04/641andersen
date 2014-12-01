@@ -38,7 +38,7 @@ public class AndersenPointsToTest {
 	
  
 	public void runSoot(String testName) {
-		Utils.setupSoot(SOOT_CLASS_PATH, testName);
+		Utils.setupSoot(SOOT_CLASS_PATH, testName, "cg.andersen");
 	}
 
 	@Before

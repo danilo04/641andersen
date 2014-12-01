@@ -10,7 +10,7 @@ import soot.Transform;
 import soot.options.Options;
 
 public class Utils {
-	public static void setupSoot(String sootClassPath, String mainClass) {
+	public static void setupSoot(String sootClassPath, String mainClass, String pointsTo) {
 		PackManager.v().getPack("cg")
 			.add(new Transform("cg.andersen", new AndersenTransformer()));
 		Options.v().set_main_class(mainClass);
@@ -23,7 +23,7 @@ public class Utils {
 		Options.v().set_include_all(true);
 		//Options.v().set_verbose(true);
 		Options.v().set_soot_classpath(sootClassPath);
-		Options.v().setPhaseOption("cg.andersen", "on");
+		Options.v().setPhaseOption(pointsTo, "on");
 		soot.Main.v().autoSetOptions();
 		
 		
